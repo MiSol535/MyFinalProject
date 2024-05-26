@@ -1,0 +1,57 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class WalkBehavior : StateMachineBehaviour
+{
+    List<Transform> points = new List<Transform>();
+    float timer;
+    UnityEngine.AI.NavMeshAgent agent;
+
+    Transform player;
+    float runRange = 10;
+
+    
+   
+    override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        timer = 0;
+        Transform pointsObject = GameObject.FindGameObjectWithTag("Points").transform;
+        foreach (Transform t in pointsObject)
+        {
+            points.Add(t);
+        }
+        agent = animator.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        agent.SetDestination(points[0].position);
+
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+    }
+
+    
+    override public void OnStateUpdate(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        if (agent.remainingDistance <= agent.stoppingDistance)
+        {
+            agent.SetDestination(points[Random.Range(0, points.Count)].position);
+        }
+
+        timer += Time.deltaTime;
+        if (timer > 10)
+        {
+            animator.SetBool("IsWalking", false);
+        }
+
+        float distance = Vector3.Distance(animator.transform.position, player.position);
+
+        if (distance < runRange)
+        {
+            animator.SetBool("IsRunning", true);
+        }
+    }
+
+    
+    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        agent.SetDestination(agent.transform.position);
+    }
+}
